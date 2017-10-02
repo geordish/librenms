@@ -241,7 +241,7 @@ $('#sched-submit').click('', function(e) {
                 window.setTimeout(function() { $('#schedulemsg').fadeOut().slideUp(); } , 5000);
                 $("#schedule-maintenance").modal('hide');
                 $("#schedulemodal-alert").remove();
-                $("#alert-schedule").bootgrid('reload');
+                $("#alert-schedule").DataTable().ajax.reload();
             } else {
                 $("#response").html('<div id="schedulemodal-alert" class="alert alert-danger">'+data.message+'</div>');
             }

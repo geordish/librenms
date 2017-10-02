@@ -172,19 +172,19 @@ if (defined('SHOW_SETTINGS')) {
     <table id="alerts_'.$unique_id.'" class="table table-hover table-condensed alerts">
         <thead>
             <tr>
-                <th data-column-id="status" data-formatter="status" data-sortable="false">Status</th>
+                <th data-column-id="status" data-sortable="false">Status</th>
                 <th data-column-id="rule">Rule</th>
                 <th data-column-id="details" data-sortable="false">&nbsp;</th>
                 <th data-column-id="hostname">Hostname</th>
                 <th data-column-id="timestamp">Timestamp</th>
-                <th data-column-id="severity" data-formatter="severity">Severity</th>
-                <th data-column-id="ack" data-formatter="ack" data-sortable="false">Acknowledge</th>';
+                <th data-column-id="severity">Severity</th>
+                <th data-column-id="ack" data-sortable="false">Acknowledge</th>';
     if (is_numeric($proc)) {
         if ($proc) {
-            $common_output[] = '<th data-column-id="proc" data-formatter="proc" data-sortable="false">Procedure</th>';
+            $common_output[] = '<th data-column-id="proc" data-sortable="false">Procedure</th>';
         }
     } else {
-        $common_output[] = '<th data-column-id="proc" data-formatter="proc" data-sortable="false">Procedure</th>';
+        $common_output[] = '<th data-column-id="proc" data-sortable="false">Procedure</th>';
     }
     $common_output[] = '
             </tr>
@@ -192,6 +192,91 @@ if (defined('SHOW_SETTINGS')) {
     </table>
 </div>
 <script>
+var alerts_grid = $("#alerts_'.$unique_id.'").DataTable( {
+    "lengthMenu": [[50, 100, 250, -1], [50, 100, 250, "All"]],
+    "serverSide": true,
+    "processing": true,
+    "scrollX": false,
+    "sScrollX": "100%",
+    "sScrollXInner": "100%",
+    "dom":  "ltip",
+    "ajax": {
+        "url": "ajax_table.php",
+        "type": "POST",
+        "data": {
+            "id": "alerts",
+            "device_id": "' . $device['device_id'] .'",'
+;
+            if (is_numeric($acknowledged)) {
+                $common_output[]="acknowledged: '$acknowledged',\n";
+            }
+            if (isset($state) && $state != '') {
+                $common_output[]="state: '$state',\n";
+            }
+            if (isset($min_severity) && $min_severity != '') {
+                $common_output[]="min_severity: '$min_severity',\n";
+            }
+
+            if (is_numeric($group)) {
+                $common_output[]="group: '$group',\n";
+            }
+            if (is_numeric($proc)) {
+                $common_output[]="proc: '$proc',\n";
+            }
+            $common_output[]='
+        },
+    },
+    "columns": [
+        { "data": "state" },
+        { "data": "rule" },
+        { "data": "details" },
+        { "data": "hostname" },
+        { "data": "timestamp" },
+        { "data": "severity" },
+        { "data": null },
+        { "data": null },
+    ],
+    "columnDefs": [
+        {
+            "render" : function (data, type, row) {
+                return "<h4><span class=\'label label-"+row.extra+" threeqtr-width\'>" + row.msg + "</span></h4>";
+            },
+            "targets": 0
+        },
+        {
+            "render" : function (data, type, row) {
+                return "<button type=\'button\' class=\'btn btn-"+row.ack_col+" btn-sm command-ack-alert\' data-target=\'#ack-alert\' data-state=\'"+row.state+"\' data-alert_id=\'"+row.alert_id+"\' name=\'ack-alert\' id=\'ack-alert\' data-extra=\'"+row.extra+"\'><i class=\'fa fa-"+row.ack_ico+"\'aria-hidden=\'true\'></i></button>";
+            },
+            "targets": 6
+        },
+        {
+            "render" : function (data, type, row) {
+                return "<button type=\'button\' class=\'btn btn-sm command-open-proc\' data-alert_id=\'"+row.alert_id+"\' name=\'open-proc\' id=\'open-proc\'>Open</button>";
+            },
+            "targets": 7
+        },
+        {
+            "render" : function (data, type, row) {
+                var eventColor = "info";
+                if (row.severity.match (/critical/)) { eventColor = "danger"; }
+                else if (row.severity.match (/warning/)) { eventColor = "warning"; }
+                else if (row.severity.match (/ok/)) { eventColor = "success"; }
+                return "<h4><span class=\'label label-" + eventColor + " threeqtr-width\'>" + row.severity + "</span></h4>";
+            },
+            "targets": 5
+        },
+    ],
+        
+    "order": [[0, "asc"]],
+});
+</script>';
+
+
+
+
+
+/*
+
 var alerts_grid = $("#alerts_'.$unique_id.'").bootgrid({
     ajax: true,
     post: function ()
@@ -309,4 +394,5 @@ var alerts_grid = $("#alerts_'.$unique_id.'").bootgrid({
     });
 });
 </script>';
+*/
 }

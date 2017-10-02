@@ -28,6 +28,11 @@ if (is_admin() !== false) {
 
 <div class="panel panel-default panel-condensed">
     <div class="table-responsive">
+        <div id="alert-schedule-header" class="bootgrid-header container-fluid"><div class="row">
+            <div class="col-sm-8 actionBar"><span class="pull-left">
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#schedule-maintenance">Schedule maintenance</button>
+            </span></div>
+            <div class="col-sm-4 actionBar"><p class="{{css.search}}"></p><p class="{{css.actions}}"></p></div></div></div>
         <table id="alert-schedule" class="table table-condensed">
             <thead>
                 <tr>
@@ -40,52 +45,74 @@ if (is_admin() !== false) {
                     <th data-column-id="start_recurring_hr">Start recurring hr</th>
                     <th data-column-id="end_recurring_hr">End recurring hr</th>
                     <th data-column-id="recurring_day" data-sortable="false" data-searchable="false">Recurring on days</th>
-                    <th data-column-id="actions" data-sortable="false" data-searchable="false" data-formatter="commands">Actions</th>
-                    <th data-column-id="status" data-sortable="false" data-searchable="false" data-formatter="schedstatus">Status</th>
+                    <th data-column-id="actions" data-sortable="false" data-searchable="false">Actions</th>
+                    <th data-column-id="status" data-sortable="false" data-searchable="false">Status</th>
                 </tr>
             </thead>
         </table>
     </div>
 </div>
-<script>
-
-var grid = $("#alert-schedule").bootgrid({
-    ajax: true,
-    formatters: {
-        "commands": function(column, row) {
-            var response = "<button type=\"button\" class=\"btn btn-xs btn-primary command-edit\" data-toggle='modal' data-target='#schedule-maintenance' data-schedule_id=\"" + row.id + "\"><span class=\"fa fa-pencil\"></span></button> " +
-                "<button type=\"button\" class=\"btn btn-xs btn-danger command-delete\" data-schedule_id=\"" + row.id + "\"><span class=\"fa fa-trash-o\"></span></button>";
-            return response;
+    <script>
+    // Needs Search
+var data = $('#alert-schedule').DataTable( {
+    "lengthMenu": [[50, 100, 250, -1], [50, 100, 250, "All"]],
+    "serverSide": true,
+    "processing": true,
+    "scrollX": false,
+    "sScrollX": "100%",
+    "sScrollXInner": "100%",
+    "dom":  "ltip",
+    "rowId": "id",
+    "ajax": {
+        "url": "ajax_table.php",
+        "type": "POST",
+        "data": {
+            "id": "alert-schedule",
         },
-        "schedstatus": function(column, row) {
-            if (row.status == "1") {
-                response = '<span class="label label-danger">Lapsed</span>';
-            } else if (row.status == "2") {
-                response = '<span class="label label-success">Current</span>';
-            } else if (row.status == "0") {
-                response = '<span class="label label-warning">Set</span>';
-            }
-            
-            return response;
-        }
     },
-    templates: {
-        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\">"+
-                "<div class=\"col-sm-8 actionBar\"><span class=\"pull-left\">"+
-                "<button type=\"button\" class=\"btn btn-primary btn-sm\" data-toggle=\"modal\" data-target=\"#schedule-maintenance\">Schedule maintenance</button>"+
-                "</span></div>"+
-                "<div class=\"col-sm-4 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>"
-    },
-    rowCount: [50, 100, 250, -1],
-    post: function () {
-        return {
-            id: "alert-schedule",
-        };
-    },
-    url: "ajax_table.php"
-}).on("loaded.rs.jquery.bootgrid", function() {
+    "columns": [
+        { "data": "title" },
+        { "data": "recurring" },
+        { "data": "start" },
+        { "data": "end" },
+        { "data": "start_recurring_dt" },
+        { "data": "end_recurring_dt" },
+        { "data": "start_recurring_hr" },
+        { "data": "end_recurring_hr" },
+        { "data": "recurring_day" },
+        { "data": null },
+        { "data": null },
+    ],
+    "columnDefs": [
+        {
+            "render" : function (data, type, row) {
+                var response = "<button type=\"button\" class=\"btn btn-xs btn-primary command-edit\" data-toggle='modal' data-target='#schedule-maintenance' data-schedule_id=\"" + row.id + "\"><span class=\"fa fa-pencil\"></span></button> " +
+                "<button type=\"button\" class=\"btn btn-xs btn-danger command-delete\" data-schedule_id=\"" + row.id + "\"><span class=\"fa fa-trash-o\"></span></button>";
+
+                return  response;
+            },
+            "targets": 9,
+        },
+        {
+            "render" : function (data, type, row) {
+                if (row.status == "1") {
+                    response = '<span class="label label-danger">Lapsed</span>';
+                } else if (row.status == "2") {
+                    response = '<span class="label label-success">Current</span>';
+                } else if (row.status == "0") {
+                    response = '<span class="label label-warning">Set</span>';
+                }
+                
+                return response;
+            },
+            "targets": 10,
+
+        },
+    ],
+    "order": [[0, "asc"]],
+}).on("stateLoaded.dt", function() {
     /* Executes after data is loaded and rendered */
-    grid.find(".command-edit").on("click", function(e) {
+    data.find(".command-edit").on("click", function(e) {
         $('#schedule_id').val($(this).data("schedule_id"));
         $("#schedule-maintenance").modal('show');
     }).end().find(".command-delete").on("click", function(e) {
@@ -93,6 +120,7 @@ var grid = $("#alert-schedule").bootgrid({
         $('#delete-maintenance').modal('show');
     });
 });
+
 
 </script>
 

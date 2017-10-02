@@ -35,13 +35,9 @@ if (!isset($sort) || empty($sort)) {
 
 $sql .= " ORDER BY $sort";
 
-if (isset($current)) {
-    $limit_low  = (($current * $rowCount) - ($rowCount));
-    $limit_high = $rowCount;
-}
 
 if ($rowCount != -1) {
-    $sql .= " LIMIT $limit_low,$limit_high";
+    $sql .= " LIMIT $current,$rowCount";
 }
 
 $sql = "SELECT `S`.`schedule_id`, `S`.`recurring`, DATE_FORMAT(NOW(), '".$config['dateformat']['mysql']['compact']."') AS now, DATE_FORMAT(`S`.`start`, '".$config['dateformat']['mysql']['compact']."') AS `start`, DATE_FORMAT(`S`.`end`, '".$config['dateformat']['mysql']['compact']."') AS `end`,  DATE_FORMAT(`S`.`start_recurring_dt`, '".$config['dateformat']['mysql']['date']."') AS `start_recurring_dt`, DATE_FORMAT(`S`.`end_recurring_dt`, '".$config['dateformat']['mysql']['date']."') AS `end_recurring_dt`, `S`.`start_recurring_hr`, `S`.`end_recurring_hr`, `S`.`recurring_day`, `S`.`title` $sql";
@@ -107,9 +103,9 @@ foreach (dbFetchRows($sql, $param) as $schedule) {
 }
 
 $output = array(
-    'current'  => $current,
-    'rowCount' => $rowCount,
-    'rows'     => $response,
-    'total'    => $total,
+    'draw' => $draw,
+    'recordsFiltered' => $total,
+    'recordsTotal' => $total,
+    'data' => $response,
 );
-echo _json_encode($output);
+echo json_encode($output);
